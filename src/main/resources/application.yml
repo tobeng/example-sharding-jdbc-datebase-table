@@ -1,0 +1,37 @@
+server:
+  port: 8082
+
+spring:
+  shardingsphere:
+    # 数据源
+    datasource:
+      ds0:
+        driver-class-name: com.mysql.jdbc.Driver
+        password: 123456
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://120.78.206.144:3306/ds_1?characterEncoding=utf-8
+        username: root
+      ds1:
+        driver-class-name: com.mysql.jdbc.Driver
+        password: 123456
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://120.78.206.144:3306/ds_2?characterEncoding=utf-8
+        username: root
+      names: ds0,ds1
+    sharding:
+      # 分库配置
+      default-database-strategy:
+        inline:
+          algorithm-expression: ds$->{id % 2}
+          sharding-column: id
+      # 分表配置
+      tables:
+        user:
+          actual-data-nodes: ds$->{0..1}.user_$->{0..2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+          table-strategy:
+            inline:
+              algorithm-expression: user_$->{id % 3}
+              sharding-column: id
